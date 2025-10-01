@@ -9,6 +9,7 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 from model.inference import load_model, run_prediction
 from utils.image_processing import validate_image
+from model_downloader import download_model_from_cloud, verify_model_integrity
 
 os.environ['OMP_NUM_THREADS'] = '1'
 os.environ['MKL_NUM_THREADS'] = '1'
@@ -29,11 +30,20 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+
+print("🔍 Checking for model file...")
+if not os.path.exists(MODEL_PATH):
+    print("Model file not found, downloading...")
+    if not download_model_from_cloud():
+        print("Failed to download model file. Please check MODEL_DOWNLOAD_URL environment variable.")
+        exit(1)
+    verify_model_integrity()
+
 print("Loading PyTorch model...")
 start_time = time.time()
 model = load_model(MODEL_PATH)
 load_time = time.time() - start_time
-print(f"🚀 Flask app ready! Model loaded in {load_time:.2f}s")
+print(f"Flask app ready! Model loaded in {load_time:.2f}s")
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -48,7 +58,7 @@ def cleanup_old_files():
                 file_age = current_time - os.path.getmtime(file_path)
                 if file_age > 3600:  
                     os.remove(file_path)
-                    print(f"🗑️ Cleaned up old file: {filename}")
+                    print(f"Cleaned up old file: {filename}")
     except Exception as e:
         print(f"Cleanup failed: {e}")
 
@@ -84,7 +94,7 @@ def index():
 
             cleanup_old_files()
             
-            print(f"🔍 Starting analysis for {filename}...")
+            print(f"Starting analysis for {filename}...")
             prediction_start = time.time()
             
             try:

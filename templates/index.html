@@ -11,6 +11,65 @@
         .container { max-width: 700px; }
         .card { margin-top: 50px; }
         .alert { margin-top: 20px; }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .progress-steps {
+            text-align: left;
+            margin-top: 20px;
+        }
+        
+        .step {
+            margin: 10px 0;
+            padding: 8px 0;
+            border-left: 3px solid #e9ecef;
+            padding-left: 15px;
+        }
+        
+        .step.active {
+            border-left-color: #007bff;
+            color: #007bff;
+            font-weight: bold;
+        }
+        
+        .step.completed {
+            border-left-color: #28a745;
+            color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -18,13 +77,13 @@
         <div class="card shadow-sm">
             <div class="card-body">
                 <h2 class="card-title text-center mb-4">Upload Image for Crack Analysis</h2>
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="uploadForm">
                     <div class="mb-3">
                         <label for="file" class="form-label">Select an image (JPG, PNG)</label>
                         <input class="form-control" type="file" id="file" name="file" required>
                     </div>
                     <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">Analyze Image</button>
+                        <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">Analyze Image</button>
                     </div>
                 </form>
             </div>
@@ -38,5 +97,49 @@
             {% endif %}
         {% endwith %}
     </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <h4>Processing Your Image...</h4>
+            <p>This may take 10-30 seconds depending on your hardware.</p>
+            <div class="progress-steps">
+                <div class="step active" id="step1">📤 Uploading image...</div>
+                <div class="step" id="step2">🔍 Preprocessing image...</div>
+                <div class="step" id="step3">🧠 Running AI model...</div>
+                <div class="step" id="step4">📊 Analyzing results...</div>
+                <div class="step" id="step5">✅ Generating report...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            document.getElementById('submitBtn').disabled = true;
+            document.getElementById('submitBtn').textContent = 'Processing...';
+            
+            const steps = ['step1', 'step2', 'step3', 'step4', 'step5'];
+            let currentStep = 0;
+            
+            const progressInterval = setInterval(() => {
+                if (currentStep < steps.length) {
+                    if (currentStep > 0) {
+                        document.getElementById(steps[currentStep - 1]).classList.remove('active');
+                        document.getElementById(steps[currentStep - 1]).classList.add('completed');
+                    }
+                    
+                    if (currentStep < steps.length) {
+                        document.getElementById(steps[currentStep]).classList.add('active');
+                    }
+                    
+                    currentStep++;
+                } else {
+                    clearInterval(progressInterval);
+                }
+            }, 2000); 
+        });
+    </script>
 </body>
 </html>

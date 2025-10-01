@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid mt-4">
+    <h1 class="text-center mb-4">Crack Analysis Report</h1>
+
+    <div class="row text-center">
+        <div class="col-md-4">
+            <h5>Original Image</h5>
+            <img src="{{ original_image }}" class="img-fluid rounded shadow" alt="Original">
+        </div>
+        <div class="col-md-4">
+            <h5>Detected Crack Mask</h5>
+            <img src="{{ mask_image }}" class="img-fluid rounded shadow" alt="Mask">
+        </div>
+        <div class="col-md-4">
+            <h5>Overlay on Original</h5>
+            <img src="{{ overlay_image }}" class="img-fluid rounded shadow" alt="Overlay">
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="text-center mb-4">Quantitative Analysis</h2>
+            {% if crack_data %}
+                <div class="row">
+                     <div class="col-md-6 text-center">
+                        <h5>Crack Localization</h5>
+                         <img src="{{ quantified_image }}" class="img-fluid rounded shadow" alt="Quantified">
+                     </div>
+                     <div class="col-md-6">
+                         <table class="table table-striped table-hover">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Crack ID</th>
+                                    <th>Length (mm)*</th>
+                                    <th>Avg. Width (mm)*</th>
+                                    <th>Max. Width (mm)*</th>
+                                    <th>Area (pixels)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for crack in crack_data %}
+                                <tr>
+                                    <td>{{ crack.id }}</td>
+                                    <td>{{ crack.length_mm }}</td>
+                                    <td>{{ crack.avg_width_mm }}</td>
+                                    <td>{{ crack.max_width_mm }}</td>
+                                    <td>{{ crack.area_pixels }}</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-muted small">*Measurements are based on an assumed scale of 0.1 mm/pixel and may not be accurate without calibration.</p>
+                     </div>
+                </div>
+            {% else %}
+                <div class="alert alert-success text-center" role="alert">
+                    <h4>No cracks were detected in the image.</h4>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="text-center my-5">
+        <a href="/" class="btn btn-primary btn-lg">Analyze Another Image</a>
+    </div>
+</div>
+</body>
+</html>
